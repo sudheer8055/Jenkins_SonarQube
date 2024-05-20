@@ -5,7 +5,7 @@ pipeline {
        stage ('checkout source code') {
            steps {
                script {
-                   checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github_PAT', url: 'https://github.com/sudheer8055/sonar-Analysis.git']])
+                   checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github_PAT', url: 'https://github.com/sudheer8055/sonar-Analysis.git']])
                }
           }
 
@@ -13,13 +13,33 @@ pipeline {
 
 stage('SonarQube Code Analysis') {
             steps {
+                dir("${WORKSPACE}"){
+                // Run SonarQube analysis for Python
                 script {
-                        sh "pwd"
+                    def scannerHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    withSonarQubeEnv('sonar') {
                         sh "/opt/sonar-scanner/bin/sonar-scanner -X"
+                    }
                 }
             }
             }
-
+       }
+       stage("SonarQube Quality Gate Check") {
+            steps {
+                script {
+                def qualityGate = waitForQualityGate()
+                    
+                    if (qualityGate.status != 'OK') {
+                        echo "${qualityGate.status}"
+                        error "Quality Gate failed: ${qualityGateStatus}"
+                    }
+                    else {
+                        echo "${qualityGate.status}"
+                        echo "SonarQube Quality Gates Passed"
+                    }
+                }
+            }
+        }
     }
     
     post {
