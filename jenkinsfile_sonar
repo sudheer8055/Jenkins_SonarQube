@@ -13,7 +13,7 @@ pipeline {
 
 stage('SonarQube Code Analysis') {
             steps {
-                dir("${WORKSPACE}"){
+               // dir("${WORKSPACE}"){
                 // Run SonarQube analysis for Python
                 script {
                    // def scannerHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
